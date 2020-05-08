@@ -363,16 +363,13 @@ namespace XEditor
                         m_LODs[i].go.SetActive(false);
                     }
                 }
-                go.SetActive(true);
+                go?.SetActive(true);
             }
             else
             {
                 foreach (var it in m_LODs)
                 {
-                    if (it.go != null)
-                    {
-                        it.go.SetActive(false);
-                    }
+                    it.go?.SetActive(false);
                 }
             }
         }
