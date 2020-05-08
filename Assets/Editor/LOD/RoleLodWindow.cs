@@ -13,7 +13,7 @@ namespace XEditor
         static void AnimExportTool()
         {
             var win = GetWindow(typeof(RoleLodWindow));
-            string iconPat = "Assets/Editor/AvatarEditor/LOD/ico.png";
+            string iconPat = "Assets/Editor/LOD/ico.png";
             var icon = AssetDatabase.LoadAssetAtPath<Texture2D>(iconPat);
             win.titleContent = new GUIContent(" role lod preview window", icon);
             win.Show();
