@@ -20,16 +20,27 @@ namespace XEditor
         }
 
         private int m_SelectedLODSlider = -1;
-        private int m_SelectedLOD = -1;
+        private int m_selectLOD = -1;
         private int m_NumberOfLODs = 3;
         private float m_cameraPercent = 0.8f;
+        private LodUtil.Direct m_direct;
+
+
+        private int SelectedLOD
+        {
+            get { return m_selectLOD; }
+            set
+            {
+                if (m_selectLOD != value)
+                {
+                    OnLodChanged(value, m_selectLOD);
+                    m_selectLOD = value;
+                }
+            }
+        }
 
         private List<LODAsset> m_LODs;
 
-        private int activeLOD
-        {
-            get { return m_SelectedLOD; }
-        }
 
         private void OnEnable()
         {
@@ -39,18 +50,30 @@ namespace XEditor
                 for (int i = 0; i < m_NumberOfLODs; i++)
                 {
                     LODAsset oDAsset = new LODAsset();
-                    oDAsset.screenRelativeHeight = (m_NumberOfLODs - i) * 0.25f;
+                    oDAsset.screenPercentage = (m_NumberOfLODs - i) * 0.25f;
+                    GameObject go = GameObject.Find("UnityChanLipSync_LOD" + (i + 1));
+                    oDAsset.Drop(go);
                     m_LODs.Add(oDAsset);
                 }
+                UpdateBehavic();
+                SelectedLOD = 0;
+            }
+        }
+
+        private void OnDestroy()
+        {
+            foreach(var it in m_LODs)
+            {
+                it.go?.SetActive(true);
             }
         }
 
         private void OnGUI()
         {
             var initiallyEnabled = GUI.enabled;
-            if (m_SelectedLOD >= m_NumberOfLODs)
+            if (SelectedLOD >= m_NumberOfLODs)
             {
-                m_SelectedLOD = m_NumberOfLODs - 1;
+                SelectedLOD = m_NumberOfLODs - 1;
             }
             GUILayout.BeginVertical();
             GUILayout.Space(28);
@@ -58,7 +81,7 @@ namespace XEditor
             var sliderBarPosition = GUILayoutUtility.GetRect(0, LODGUI.kSliderBarHeight, GUILayout.ExpandWidth(true));
             var lods = LODGUI.CreateLODInfos(m_NumberOfLODs, sliderBarPosition,
                   i => string.Format("LOD {0}", i),
-                  i => m_LODs[i].screenRelativeHeight);
+                  i => m_LODs[i].screenPercentage);
 
             DrawLODLevelSlider(sliderBarPosition, lods);
             GUILayout.Space(LODGUI.kSliderBarBottomMargin);
@@ -67,11 +90,16 @@ namespace XEditor
                 EditorGUILayout.HelpBox(string.Format("Active LOD bias is {0:0.0#}. Distances are adjusted accordingly.", QualitySettings.lodBias), MessageType.Warning);
 
             GUILayout.Space(8);
-            GUILayout.Label(m_SelectedLOD < 0 ? "Culled" : "LOD " + m_SelectedLOD, LODGUI.selectStyle);
+            GUILayout.Label(SelectedLOD < 0 ? "Culled" : "LOD " + SelectedLOD, LODGUI.selectStyle);
             GUILayout.Space(8);
-            if (m_SelectedLOD >= 0)
+            if (SelectedLOD >= 0)
             {
-                m_LODs[m_SelectedLOD].GUI();
+                var direct = m_LODs[SelectedLOD].GUI(m_direct);
+                if (m_direct != direct)
+                {
+                    m_direct = direct;
+                    UpdateBehavic();
+                }
             }
             GUILayout.EndVertical();
         }
@@ -88,7 +116,7 @@ namespace XEditor
             {
                 case EventType.Repaint:
                     {
-                        LODGUI.DrawLODSlider(sliderPosition, lods, activeLOD);
+                        LODGUI.DrawLODSlider(sliderPosition, lods, SelectedLOD);
                         break;
                     }
                 case EventType.MouseDown:
@@ -122,12 +150,12 @@ namespace XEditor
                             {
                                 if (lod.m_RangePosition.Contains(evt.mousePosition))
                                 {
-                                    m_SelectedLOD = lod.LODLevel;
+                                    SelectedLOD = lod.LODLevel;
                                     selected = true;
                                     break;
                                 }
                             }
-                            if (!selected) m_SelectedLOD = -1;
+                            if (!selected) SelectedLOD = -1;
                             evt.Use();
                             break;
                         }
@@ -162,7 +190,7 @@ namespace XEditor
                                     if (lod.m_RangePosition.Contains(evt.mousePosition))
                                     {
                                         m_SelectedLODSlider = -1;
-                                        m_SelectedLOD = lod.LODLevel;
+                                        SelectedLOD = lod.LODLevel;
                                         break;
                                     }
                                 }
@@ -178,7 +206,7 @@ namespace XEditor
                             var cameraPercent = LODGUI.GetCameraPercent(evt.mousePosition, sliderPosition);
                             // Bias by 0.1% so that there is no skipping when sliding
                             LODGUI.SetSelectedLODLevelPercentage(cameraPercent - 0.001f, m_SelectedLODSlider, lods);
-                            m_LODs[m_SelectedLODSlider].screenRelativeHeight = cameraPercent;
+                            m_LODs[m_SelectedLODSlider].screenPercentage = cameraPercent;
                             UpdateLODDrag();
                         }
                         break;
@@ -208,7 +236,7 @@ namespace XEditor
                         }
                         if (lodLevel >= 0)
                         {
-                            m_SelectedLOD = lodLevel;
+                            SelectedLOD = lodLevel;
                             DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
                             if (DragAndDrop.objectReferences.Count() > 0)
                             {
@@ -222,9 +250,10 @@ namespace XEditor
                                         var go = selectedGameObjects.First();
                                         if (go != null)
                                         {
-                                            m_LODs[m_SelectedLOD].Drop(go);
+                                            m_LODs[SelectedLOD].Drop(go);
                                             UpdateBehavic();
-                                            Debug.Log("drop lod: " + m_SelectedLOD + " " + go.name);
+                                            OnLodChanged(m_selectLOD);
+                                            Debug.Log("drop lod: " + SelectedLOD + " " + go.name);
                                         }
                                     }
                                     DragAndDrop.AcceptDrag();
@@ -302,14 +331,14 @@ namespace XEditor
             {
                 if (cameraPercent > lod.RawScreenPercent)
                 {
-                    m_SelectedLOD = lod.LODLevel;
+                    SelectedLOD = lod.LODLevel;
                     find = true;
                     break;
                 }
             }
             if (!find)
             {
-                m_SelectedLOD = -1;
+                SelectedLOD = -1;
             }
         }
 
@@ -341,7 +370,7 @@ namespace XEditor
 
         private void DeletedLOD()
         {
-            m_SelectedLOD--;
+            SelectedLOD--;
             m_NumberOfLODs--;
         }
 
@@ -352,10 +381,19 @@ namespace XEditor
 
         private void UpdateBehavic()
         {
-            if (m_SelectedLOD >= 0)
+            if (SelectedLOD >= 0)
             {
-                GameObject go = m_LODs[m_SelectedLOD]?.go;
-                LodUtil.UpdateCamera(m_cameraPercent, go);
+                GameObject go = m_LODs[SelectedLOD]?.go;
+                LodUtil.UpdateCamera(m_cameraPercent, go, m_direct);
+            }
+        }
+
+        private void OnLodChanged(int level, int prev = -1)
+        {
+            if (m_LODs == null) return;
+            if (level >= 0)
+            {
+                GameObject go = m_LODs[level]?.go;
                 for (int i = 0; i < m_LODs.Count; i++)
                 {
                     if (m_LODs[i].go != null && m_LODs[i].go != go)
@@ -364,6 +402,7 @@ namespace XEditor
                     }
                 }
                 go?.SetActive(true);
+
             }
             else
             {

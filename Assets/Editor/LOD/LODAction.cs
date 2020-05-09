@@ -10,10 +10,10 @@ namespace XEditor
         public SkinnedMeshRenderer[] renders;
         public Mesh[] meshes;
 
-        public float screenRelativeHeight;
+        public float screenPercentage;
         private int vertCnt, triCnt;
         private Vector2 scroll;
-        
+
         public void Drop(GameObject g)
         {
             go = Root(g);
@@ -46,7 +46,7 @@ namespace XEditor
             return go;
         }
 
-        public void GUI()
+        public LodUtil.Direct GUI(LodUtil.Direct direct)
         {
             if (meshes != null && go != null)
             {
@@ -54,6 +54,7 @@ namespace XEditor
                 GUILayout.BeginVertical();
                 GUILayout.BeginHorizontal();
                 GUILayout.Label(go.name, LODGUI.totalStyle);
+                direct = (LodUtil.Direct)EditorGUILayout.EnumPopup(direct, GUILayout.MaxWidth(80));
                 if (GUILayout.Button("Visualize Bounds", GUILayout.MaxWidth(110)))
                 {
                     LodUtil.AttachCollider(go);
@@ -89,6 +90,7 @@ namespace XEditor
             {
                 GUILayout.Label("no gameobject attached");
             }
+            return direct;
         }
 
         private void DrawMesh(Mesh mesh)
@@ -141,7 +143,7 @@ namespace XEditor
             }
 
             LODAsset asset = new LODAsset();
-            asset.screenRelativeHeight = Mathf.Max(0.1f, screenHeight - 0.1f);
+            asset.screenPercentage = Mathf.Max(0.1f, screenHeight - 0.1f);
             if (insertIndex < 0)
             {
                 m_LODsProperty.Add(asset);
@@ -152,7 +154,7 @@ namespace XEditor
                 m_LODsProperty.Insert(insertIndex, asset);
             }
 
-            asset.screenRelativeHeight = m_Percentage;
+            asset.screenPercentage = m_Percentage;
             m_Callback?.Invoke();
         }
 
