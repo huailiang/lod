@@ -26,8 +26,11 @@ namespace LodEditor
             for (int i = 0; i < cnt; i++)
             {
                 meshes[i] = renders[i].sharedMesh;
-                vertCnt += meshes[i].vertexCount;
-                triCnt += meshes[i].triangles.Length;
+                if (meshes[i])
+                {
+                    vertCnt += meshes[i].vertexCount;
+                    triCnt += meshes[i].triangles.Length;
+                }
             }
             triCnt /= 3;
         }
