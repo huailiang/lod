@@ -15,7 +15,7 @@
 
 __用法：__
 
-菜单栏： Tools->RoleLOD, 打开窗口后， 把不同的lod的模型拖拽到编辑器对应的模块， 拖拽编辑器上的camera图标即可预览了。
+菜单栏： Tools->LodEditor, 打开窗口后， 把不同的lod的模型拖拽到编辑器对应的模块， 拖拽编辑器上的camera图标即可预览了。
 
 点击save按钮， 会重新排序mesh绑定的骨骼和mesh对应的bindpose以及骨骼权重，进而导出mesh, 从而避免运行时切换lod/mesh的时候再次绑定骨骼
 

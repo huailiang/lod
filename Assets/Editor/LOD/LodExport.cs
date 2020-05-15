@@ -11,7 +11,7 @@ namespace LodEditor
      * 避免运行时需要再次绑定骨骼，以节省不必要的开销， 特别是skinedmeshRender绑定骨骼特别多的情况
      */
 
-    public class MeshExport
+    public class LodExport
     {
 
         private static SkinnedMeshRenderer[] lod0_parts;
@@ -85,17 +85,26 @@ namespace LodEditor
                 }
             }
 
-            GeneratePrefab(lodNode.prefab, lods[0].go);
+            GeneratePrefab(lodNode.prefab, lods[0]);
         }
 
 
-        private static void GeneratePrefab(string prefab, GameObject go)
+        private static void GeneratePrefab(string prefab, LODAsset asset)
         {
+            GameObject go = asset.go;
             string path = LodUtil.pref + prefab + ".prefab";
             var amtor = go.GetComponent<Animator>();
             if (amtor == null) amtor = go.AddComponent<Animator>();
             string p = "Assets/Resources/XAnimator.controller";
             amtor.runtimeAnimatorController = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(p);
+
+            // temp
+            Material mat = AssetDatabase.LoadAssetAtPath<Material>("Assets/Editor/Lod/lod.mat");
+            foreach (var render in asset.renders)
+            {
+                render.sharedMaterial = mat;
+            }
+
             PrefabUtility.SaveAsPrefabAsset(go, path);
             AssetDatabase.ImportAsset(path);
         }

@@ -126,7 +126,7 @@ namespace LodEditor
                 string prefab = lodNode.prefab;
                 config.AddorUpdate(prefab, levels);
                 config.Save();
-                MeshExport.Export(m_LODs.ToArray(), lodNode);
+                LodExport.Export(m_LODs.ToArray(), lodNode);
 
                 LodUtil.ReLoad(m_LODs, lodNode);
                 return;
