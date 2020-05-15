@@ -1,9 +1,8 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 using UnityEditor;
 using UnityEngine;
 
-namespace XEditor
+namespace LodEditor
 {
 
     public class LODAction

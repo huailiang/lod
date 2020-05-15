@@ -4,7 +4,7 @@ using UnityEditor;
 using UnityEngine;
 
 
-namespace XEditor
+namespace LodEditor
 {
 
     [CustomEditor(typeof(LodData))]
@@ -47,7 +47,7 @@ namespace XEditor
 
             GUILayout.BeginHorizontal();
             GUILayout.Label(icon, LODGUI.Styles.LODRendererButton, GUILayout.MaxWidth(32), GUILayout.MaxHeight(32));
-            GUILayout.Label("Lod Data", XEditorUtil.titleLableStyle);
+            GUILayout.Label("Lod Data", LODGUI.titleLableStyle);
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
 
@@ -63,7 +63,7 @@ namespace XEditor
                         var op = node.GUI();
                         if (op == LodOP.DELETE)
                         {
-                            Data.nodes = XEditorUtil.Remv<LodNode>(Data.nodes, i);
+                            Data.nodes = LodUtil.Remv<LodNode>(Data.nodes, i);
                             break;
                         }
                         else if (op == LodOP.DETAIL)
@@ -96,7 +96,7 @@ namespace XEditor
             GUILayout.BeginHorizontal();
             if (GUILayout.Button("Add"))
             {
-                XEditorUtil.Add<LodNode>(ref odData.nodes, new LodNode("role"));
+                LodUtil.Add<LodNode>(ref odData.nodes, new LodNode("role"));
             }
             if (GUILayout.Button("Save"))
             {

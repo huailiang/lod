@@ -2,7 +2,7 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace XEditor
+namespace LodEditor
 {
     public class LODAsset
     {

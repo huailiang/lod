@@ -4,7 +4,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
-namespace XEditor
+namespace LodEditor
 {
     public class LodWindow : EditorWindow
     {

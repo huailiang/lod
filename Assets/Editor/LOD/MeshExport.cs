@@ -4,7 +4,7 @@ using UnityEditor;
 using System.IO;
 using System.Linq;
 
-namespace XEditor
+namespace LodEditor
 {
     /*
      * 这里生成的mesh的时候， 对骨骼的matrix进行排序和重定向
@@ -94,7 +94,7 @@ namespace XEditor
             string path = LodUtil.pref + prefab + ".prefab";
             var amtor = go.GetComponent<Animator>();
             if (amtor == null) amtor = go.AddComponent<Animator>();
-            string p = "Assets/BundleRes/Controller/XAnimator.controller";
+            string p = "Assets/Resources/XAnimator.controller";
             amtor.runtimeAnimatorController = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(p);
             PrefabUtility.SaveAsPrefabAsset(go, path);
             AssetDatabase.ImportAsset(path);
@@ -204,9 +204,6 @@ namespace XEditor
             string part = mesh.name;
             string dir = LodUtil.prefix + name + "/lod" + level;
             string file = part + ".mesh";
-            // string bytes = part + ".bytes";
-            // GenBytes(Path.Combine(dir, bytes), mesh.triangles);
-            // mesh.triangles = null;
 
             ExMesh format = lodNode.Format(level);
             if ((format & ExMesh.COLOR) <= 0) mesh.colors = null;
@@ -219,32 +216,14 @@ namespace XEditor
 
             mesh.Optimize();
             var path = Path.Combine(dir, file);
+            if(!Directory.Exists(dir))
+            {
+                Directory.CreateDirectory(dir);
+            }
             AssetDatabase.CreateAsset(mesh, path);
             AssetDatabase.ImportAsset(path);
         }
-
-        private static void GenBytes(string path, int[] tris)
-        {
-            FileStream fs = new FileStream(path, FileMode.OpenOrCreate, FileAccess.Write);
-            BinaryWriter writer = new BinaryWriter(fs);
-            bool max = tris.Length >= (1 << 16); // 超过unshort边界 就用int记
-            writer.Write(max);
-            for (int i = 0; i < tris.Length; i++)
-            {
-                if (max)
-                {
-                    writer.Write(tris[i]);
-                }
-                else
-                {
-                    ushort v = (ushort)tris[i];
-                    writer.Write(v);
-                }
-            }
-            writer.Close();
-            fs.Close();
-            AssetDatabase.ImportAsset(path);
-        }
+        
 
     }
 

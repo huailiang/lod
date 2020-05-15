@@ -4,7 +4,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
-namespace XEditor
+namespace LodEditor
 {
     public class LODGUI
     {
@@ -73,7 +73,7 @@ namespace XEditor
             }
         }
 
-        private static GUIStyle _totalStyle, _selectStyle;
+        private static GUIStyle _totalStyle, _selectStyle, _labelStyle;
 
         public static GUIStyle totalStyle
         {
@@ -101,6 +101,18 @@ namespace XEditor
                     _selectStyle.fontStyle = FontStyle.Bold;
                 }
                 return _selectStyle;
+            }
+        }
+
+        public static GUIStyle titleLableStyle
+        {
+            get
+            {
+                if (_labelStyle == null)
+                    _labelStyle = new GUIStyle(EditorStyles.label);
+                _labelStyle.fontStyle = FontStyle.Bold;
+                _labelStyle.fontSize = 22;
+                return _labelStyle;
             }
         }
 

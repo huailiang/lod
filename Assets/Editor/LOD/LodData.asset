@@ -21,11 +21,3 @@ MonoBehaviour:
     - 0.4
     - 0.2
     format: 510000001100000001000000
-  - dir: Assets/LODs/UnityChanLipSync
-    prefab: UnityChanLipSync
-    comment: role
-    levels:
-    - 0.7
-    - 0.5
-    - 0.3
-    format: 510000001100000001000000

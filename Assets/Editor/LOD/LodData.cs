@@ -2,7 +2,7 @@
 using UnityEditor;
 using System.IO;
 
-namespace XEditor
+namespace LodEditor
 {
 
     public enum ExMesh
@@ -112,8 +112,8 @@ namespace XEditor
                 EditorGUILayout.LabelField(prefab);
                 if (GUILayout.Button("Add", GUILayout.MaxWidth(80)))
                 {
-                    XEditorUtil.Add<float>(ref levels, levels[levels.Length - 1] / 2.0f);
-                    XEditorUtil.Add<ExMesh>(ref format, ExMesh.UV1);
+                    LodUtil.Add<float>(ref levels, levels[levels.Length - 1] / 2.0f);
+                    LodUtil.Add<ExMesh>(ref format, ExMesh.UV1);
                 }
                 if (GUILayout.Button("Detail", GUILayout.MaxWidth(80)))
                 {
@@ -140,8 +140,8 @@ namespace XEditor
                     }
                     if (del)
                     {
-                        levels = XEditorUtil.Remv<float>(levels, i);
-                        format = XEditorUtil.Remv<ExMesh>(format, i);
+                        levels = LodUtil.Remv<float>(levels, i);
+                        format = LodUtil.Remv<ExMesh>(format, i);
                         break;
                     }
                     if (i > 0 && levels[i] >= levels[i - 1]) sort = false;
@@ -177,7 +177,7 @@ namespace XEditor
             }
             if (!find)
             {
-                XEditorUtil.Add<LodNode>(ref nodes, new LodNode(prefab, levels));
+                LodUtil.Add<LodNode>(ref nodes, new LodNode(prefab, levels));
             }
             return find;
         }

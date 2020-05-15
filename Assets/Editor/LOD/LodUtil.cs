@@ -5,7 +5,7 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace XEditor
+namespace LodEditor
 {
 
     public class LodUtil
@@ -33,8 +33,8 @@ namespace XEditor
             }
         }
 
-        internal const string prefix = "Assets/BundleRes/LOD/";
-        internal const string pref = "Assets/BundleRes/Prefabs/";
+        internal const string prefix = "Assets/Resources/LOD/";
+        internal const string pref = "Assets/Resources/Prefabs/";
         internal static int rand;
 
         public static Bounds BuildBounds(GameObject go)
@@ -212,6 +212,46 @@ namespace XEditor
                 var light = GameObject.FindObjectOfType<Light>();
                 light.transform.localEulerAngles = new Vector3(100, 0, 0);
                 return true;
+            }
+        }
+
+        public static void Add<T>(ref T[] arr, T item)
+        {
+            if (arr != null)
+            {
+                T[] narr = new T[arr.Length + 1];
+                for (int i = 0; i < arr.Length; i++)
+                {
+                    narr[i] = arr[i];
+                }
+                narr[arr.Length] = item;
+                arr = narr;
+            }
+            else
+            {
+                arr = new T[1];
+                arr[0] = item;
+            }
+        }
+
+        public static T[] Remv<T>(T[] arr, int idx)
+        {
+            if (arr.Length > idx)
+            {
+                T[] narr = new T[arr.Length - 1];
+                for (int i = 0; i < idx; i++)
+                {
+                    narr[i] = arr[i];
+                }
+                for (int i = idx + 1; i < arr.Length; i++)
+                {
+                    narr[i - 1] = arr[i];
+                }
+                return narr;
+            }
+            else
+            {
+                return arr;
             }
         }
 
