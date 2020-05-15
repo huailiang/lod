@@ -105,7 +105,7 @@ namespace LodEditor
                     if (idx2 > 0)
                         prefab = path.Substring(idx + 1, idx2 - idx - 1);
                     else
-                        EditorGUILayout.HelpBox("fbx is not match lod rules ", MessageType.Error);
+                        EditorGUILayout.HelpBox("fbx's name is not match lod rule", MessageType.Error);
                 }
                 EditorGUILayout.BeginHorizontal();
 
