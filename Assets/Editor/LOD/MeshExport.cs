@@ -14,7 +14,7 @@ namespace XEditor
     public class MeshExport
     {
 
-        private static SkinnedMeshRenderer[] parts;
+        private static SkinnedMeshRenderer[] lod0_parts;
 
         private static Mesh CopyMesh(SkinnedMeshRenderer renderer)
         {
@@ -30,111 +30,147 @@ namespace XEditor
             public Transform tf;
         }
 
-        public static void SortBone(LODAsset[] lods)
+        public static void SortLod(LODAsset[] lods, LodNode lodNode)
         {
-            for (int i = 0; i < lods[0].renders.Length; i++)
+            for (int k = 0; k < lods.Length - 1; k++)
             {
-                List<Bone> list = new List<Bone>();
-                var render = lods[0].renders[i];
-                for (int j = 0; j < render.bones.Length; j++)
+                for (int i = 0; i < lods[0].renders.Length; i++)
                 {
-                    list.Add(new Bone() { name = render.bones[j].name, flag = -1, tf = render.bones[j] });
-                }
-                int g_idx = 0;
-                for (int j = lods.Length - 1; j >= 0; j--)
-                {
-                    render = lods[j].renders[i];
-                    foreach (var b in render.bones)
+                    List<Bone> list = new List<Bone>();
+                    // sort based lod0
+                    var render = lods[k].renders[i];
+                    for (int j = 0; j < render.bones.Length; j++)
                     {
-                        var bone = list.Find(x => x.name == b.name);
-                        if (bone.flag < 0) bone.flag = g_idx++;
+                        list.Add(new Bone() { name = render.bones[j].name, flag = -1, tf = render.bones[j] });
                     }
-                }
+                    int g_idx = 0;
+                    for (int j = lods.Length - 1; j >= k; j--)
+                    {
+                        render = lods[j].renders[i];
+                        foreach (var b in render.bones)
+                        {
+                            var bone = list.Find(x => x.name == b.name);
+                            if (bone == null)
+                            {
+                                Debug.LogError("lod" + j + " " + b.name);
+                                continue;
+                            }
+                            if (bone.flag < 0) bone.flag = g_idx++;
+                        }
+                    }
 
-                Matrix4x4[] obind = render.sharedMesh.bindposes;
-                Matrix4x4[] nbind = new Matrix4x4[obind.Length];
-                for (int j = 0; j < obind.Length; j++)
-                {
-                    nbind[list[j].flag] = obind[j];
+                    Mesh mesh = CopyMesh(render);
+                    Matrix4x4[] obind = render.sharedMesh.bindposes;
+                    Matrix4x4[] nbind = new Matrix4x4[obind.Length];
+                    for (int j = 0; j < obind.Length; j++)
+                    {
+                        nbind[list[j].flag] = obind[j];
+                    }
+                    var weights = render.sharedMesh.boneWeights;
+                    var nweights = new BoneWeight[weights.Length];
+                    for (int j = 0; j < weights.Length; j++)
+                    {
+                        nweights[j] = weights[j];
+                        nweights[j].boneIndex0 = list[weights[j].boneIndex0].flag;
+                        nweights[j].boneIndex1 = list[weights[j].boneIndex1].flag;
+                        nweights[j].boneIndex2 = list[weights[j].boneIndex2].flag;
+                        nweights[j].boneIndex3 = list[weights[j].boneIndex3].flag;
+                    }
+                    mesh.boneWeights = nweights;
+                    mesh.bindposes = nbind;
+                    list.Sort((x, y) => x.flag.CompareTo(y.flag));
+                    render.bones = list.Select(x => x.tf).ToArray();
+                    render.sharedMesh = mesh;
+                    lods[0].boneInfo = null;
                 }
-                var weights = render.sharedMesh.boneWeights;
-                var nweights = new BoneWeight[weights.Length];
-                for (int j = 0; j < weights.Length; j++)
-                {
-                    int flag = list[j].flag;
-                    nweights[j] = weights[j];
-                    nweights[flag].boneIndex0 = weights[j].boneIndex0;
-                    nweights[flag].boneIndex1 = weights[j].boneIndex1;
-                    nweights[flag].boneIndex2 = weights[j].boneIndex2;
-                    nweights[flag].boneIndex3 = weights[j].boneIndex3;
-                }
-                render.sharedMesh.bindposes = nbind;
-                list.Sort((x, y) => x.flag.CompareTo(y.flag));
-                render.bones = list.Select(x => x.tf).ToArray();
-                lods[0].boneInfo = null;
             }
+
+            GeneratePrefab(lodNode.prefab, lods[0].go);
         }
 
-        public static void Export(LODAsset[] lods)
+
+        private static void GeneratePrefab(string prefab, GameObject go)
         {
-            parts = lods[0].go.GetComponentsInChildren<SkinnedMeshRenderer>();
+            string path = LodUtil.pref + prefab + ".prefab";
+            var amtor = go.GetComponent<Animator>();
+            if (amtor == null) amtor = go.AddComponent<Animator>();
+            string p = "Assets/BundleRes/Controller/XAnimator.controller";
+            amtor.runtimeAnimatorController = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(p);
+            PrefabUtility.SaveAsPrefabAsset(go, path);
+            AssetDatabase.ImportAsset(path);
+        }
+
+
+        public static void Export(LODAsset[] lods, LodNode lodNode)
+        {
+            SortLod(lods, lodNode);
+
+            lod0_parts = lods[0].go.GetComponentsInChildren<SkinnedMeshRenderer>();
             string name = lods[0].go.name;
             name = name.Substring(0, name.LastIndexOf("_LOD"));
             // lod0 export directly
-            for (int i = 0; i < parts.Length; i++)
+            for (int i = 0; i < lod0_parts.Length; i++)
             {
-                var mesh = CopyMesh(parts[i]);
-                Save(name, 0, mesh);
+                var mesh = CopyMesh(lod0_parts[i]);
+                Save(name, 0, mesh, lodNode);
             }
-            // reculcate mesh weights & bindpose
+            // recalculte mesh weights & bindpose
             for (int i = 1; i < lods.Length; i++)
             {
                 var ps = lods[i].go.GetComponentsInChildren<SkinnedMeshRenderer>();
                 foreach (var render in ps)
                 {
-                    if (Recalcute(render, out var mesh))
-                        Save(name, i, mesh);
+                    var mesh = CopyMesh(render);
+                    if (Recalculate(render, ref mesh))
+                        Save(name, i, mesh, lodNode);
                 }
             }
             AssetDatabase.Refresh();
         }
 
 
-        private static bool Recalcute(SkinnedMeshRenderer renderer, out Mesh mesh)
+        private static bool Recalculate(SkinnedMeshRenderer render, ref Mesh mesh)
         {
-            string name = renderer.name;
+            string name = render.name;
             int part = -1;
-            for (int i = 0; i < parts.Length; i++)
+            for (int i = 0; i < lod0_parts.Length; i++)
             {
-                if (parts[i].name == name)
+                if (lod0_parts[i].name == name)
                 {
                     part = i;
+                    break;
                 }
             }
             if (part >= 0)
             {
                 Dictionary<int, int> map = new Dictionary<int, int>();
-                mesh = CopyMesh(renderer);
-                for (int i = 0; i < renderer.bones.Length; i++)
+                for (int i = 0; i < render.bones.Length; i++)
                 {
-                    string bone = renderer.bones[i].name;
+                    string bone = render.bones[i].name;
                     int idx = IndexBone(part, bone);
                     if (idx >= 0)
                     {
                         map.Add(i, idx);
-                        mesh.bindposes[i] = parts[part].sharedMesh.bindposes[idx];
+                        mesh.bindposes[i] = lod0_parts[part].sharedMesh.bindposes[idx];
+                    }
+                    else
+                    {
+                        Debug.LogError("not found bone in lod0 " + bone);
                     }
                 }
-                //  ReculMeshWeights(map, mesh);
+                RecalcutMeshWeights(map, mesh);
                 return true;
             }
-            mesh = null;
+            else
+            {
+                Debug.LogError("not found part in lod0 " + name);
+            }
             return false;
         }
 
 
         // error occur if boneindex overange
-        private static void ReculMeshWeights(Dictionary<int, int> map, Mesh mesh)
+        private static void RecalcutMeshWeights(Dictionary<int, int> map, Mesh mesh)
         {
             var weights = mesh.boneWeights;
             BoneWeight[] boneWeights = new BoneWeight[weights.Length];
@@ -150,9 +186,9 @@ namespace XEditor
             mesh.RecalculateBounds();
         }
 
-        private static int IndexBone(int idx, string bone)
+        private static int IndexBone(int part, string bone)
         {
-            var bones = parts[idx].bones;
+            var bones = lod0_parts[part].bones;
             for (int i = 0; i < bones.Length; i++)
             {
                 if (bones[i].name == bone)
@@ -163,18 +199,50 @@ namespace XEditor
             return -1;
         }
 
-
-        private static void Save(string name, int level, Mesh mesh)
+        private static void Save(string name, int level, Mesh mesh, LodNode lodNode)
         {
             string part = mesh.name;
-            string dir = "Assets/" + name + "/lod" + level;
+            string dir = LodUtil.prefix + name + "/lod" + level;
             string file = part + ".mesh";
-            if(Directory.Exists(dir))
-            {
-                Directory.CreateDirectory(dir);
-            }
+            // string bytes = part + ".bytes";
+            // GenBytes(Path.Combine(dir, bytes), mesh.triangles);
+            // mesh.triangles = null;
+
+            ExMesh format = lodNode.Format(level);
+            if ((format & ExMesh.COLOR) <= 0) mesh.colors = null;
+            if ((format & ExMesh.UV1) <= 0) mesh.uv = null;
+            if ((format & ExMesh.UV2) <= 0) mesh.uv2 = null;
+            if ((format & ExMesh.UV3) <= 0) mesh.uv3 = null;
+            if ((format & ExMesh.UV4) <= 0) mesh.uv4 = null;
+            if ((format & ExMesh.NORMAL) <= 0) mesh.normals = null;
+            if ((format & ExMesh.TANGENT) <= 0) mesh.tangents = null;
+
+            mesh.Optimize();
             var path = Path.Combine(dir, file);
             AssetDatabase.CreateAsset(mesh, path);
+            AssetDatabase.ImportAsset(path);
+        }
+
+        private static void GenBytes(string path, int[] tris)
+        {
+            FileStream fs = new FileStream(path, FileMode.OpenOrCreate, FileAccess.Write);
+            BinaryWriter writer = new BinaryWriter(fs);
+            bool max = tris.Length >= (1 << 16); // 超过unshort边界 就用int记
+            writer.Write(max);
+            for (int i = 0; i < tris.Length; i++)
+            {
+                if (max)
+                {
+                    writer.Write(tris[i]);
+                }
+                else
+                {
+                    ushort v = (ushort)tris[i];
+                    writer.Write(v);
+                }
+            }
+            writer.Close();
+            fs.Close();
             AssetDatabase.ImportAsset(path);
         }
 

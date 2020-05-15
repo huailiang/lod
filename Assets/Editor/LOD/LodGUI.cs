@@ -39,37 +39,27 @@ namespace XEditor
 
         public class GUIStyles
         {
-            public readonly GUIStyle m_LODSliderBG = "LODSliderBG";
-            public readonly GUIStyle m_LODSliderRange = "LODSliderRange";
-            public readonly GUIStyle m_LODSliderRangeSelected = "LODSliderRangeSelected";
-            public readonly GUIStyle m_LODSliderText = "LODSliderText";
-            public readonly GUIStyle m_LODSliderTextSelected = "LODSliderTextSelected";
-            public readonly GUIStyle m_LODStandardButton = "Button";
-            public readonly GUIStyle m_LODRendererButton = "LODRendererButton";
-            public readonly GUIStyle m_LODRendererAddButton = "LODRendererAddButton";
-            public readonly GUIStyle m_LODRendererRemove = "LODRendererRemove";
-            public readonly GUIStyle m_LODBlackBox = "LODBlackBox";
-            public readonly GUIStyle m_LODCameraLine = "LODCameraLine";
+            public readonly GUIStyle LODSliderBG = "LODSliderBG";
+            public readonly GUIStyle LODSliderRange = "LODSliderRange";
+            public readonly GUIStyle LODSliderRangeSelected = "LODSliderRangeSelected";
+            public readonly GUIStyle LODSliderText = "LODSliderText";
+            public readonly GUIStyle LODSliderTextSelected = "LODSliderTextSelected";
+            public readonly GUIStyle LODStandardButton = "Button";
+            public readonly GUIStyle LODRendererButton = "LODRendererButton";
+            public readonly GUIStyle LODRendererAddButton = "LODRendererAddButton";
+            public readonly GUIStyle LODRendererRemove = "LODRendererRemove";
+            public readonly GUIStyle LODBlackBox = "LODBlackBox";
+            public readonly GUIStyle LODCameraLine = "LODCameraLine";
 
-            public readonly GUIStyle m_LODSceneText = "LODSceneText";
-            public readonly GUIStyle m_LODRenderersText = "LODRenderersText";
-            public readonly GUIStyle m_LODLevelNotifyText = "LODLevelNotifyText";
+            public readonly GUIStyle LODSceneText = "LODSceneText";
+            public readonly GUIStyle LODRenderersText = "LODRenderersText";
+            public readonly GUIStyle LODLevelNotifyText = "LODLevelNotifyText";
+            public readonly GUIContent CameraIcon = EditorGUIUtility.IconContent("Camera Icon");
 
-            public readonly GUIContent m_IconRendererPlus = EditorGUIUtility.TrIconContent("Toolbar Plus", "Add New Renderers");
-            public readonly GUIContent m_IconRendererMinus = EditorGUIUtility.TrIconContent("Toolbar Minus", "Remove Renderer");
-            public readonly GUIContent m_CameraIcon = EditorGUIUtility.IconContent("Camera Icon");
-
-            public readonly GUIContent m_UploadToImporter = EditorGUIUtility.TrTextContent("Upload to Importer", "Upload the modified screen percentages to the model importer.");
-            public readonly GUIContent m_UploadToImporterDisabled = EditorGUIUtility.TrTextContent("Upload to Importer", "Number of LOD's in the scene instance differ from the number of LOD's in the imported model.");
-            public readonly GUIContent m_RecalculateBounds = EditorGUIUtility.TrTextContent("Recalculate Bounds", "Recalculate bounds to encapsulate all child renderers.");
-            public readonly GUIContent m_RecalculateBoundsDisabled = EditorGUIUtility.TrTextContent("Recalculate Bounds", "Bounds are already up-to-date.");
-            public readonly GUIContent m_LightmapScale = EditorGUIUtility.TrTextContent("Recalculate Lightmap Scale", "Set the lightmap scale to match the LOD percentages.");
-            public readonly GUIContent m_RendersTitle = EditorGUIUtility.TrTextContent("Renderers:");
-
-            public readonly GUIContent m_AnimatedCrossFadeInvalidText = EditorGUIUtility.TrTextContent("Animated cross-fading is currently disabled. Please enable \"Animate Between Next LOD\" on either the current or the previous LOD.");
-            public readonly GUIContent m_AnimatedCrossFadeInconsistentText = EditorGUIUtility.TrTextContent("Animated cross-fading is currently disabled. \"Animate Between Next LOD\" is enabled but the next LOD is not in Animated Cross Fade mode.");
-            public readonly GUIContent m_AnimateBetweenPreviousLOD = EditorGUIUtility.TrTextContent("Animate Between Previous LOD", "Cross-fade animation plays when transits between this LOD and the previous (lower) LOD.");
-        }
+            public readonly GUIContent RecalculateBounds = EditorGUIUtility.TrTextContent("Recalculate Bounds", "Recalculate bounds to encapsulate all child renderers.");
+            public readonly GUIContent RecalculateBoundsDisabled = EditorGUIUtility.TrTextContent("Recalculate Bounds", "Bounds are already up-to-date.");
+            public readonly GUIContent RendersTitle = EditorGUIUtility.TrTextContent("Renderers:");
+          }
 
         private static GUIStyles s_Styles;
 
@@ -209,7 +199,7 @@ namespace XEditor
 
         public static void DrawLODSlider(Rect area, IList<LODInfo> lods, int selectedLevel)
         {
-            Styles.m_LODSliderBG.Draw(area, GUIContent.none, false, false, false, false);
+            Styles.LODSliderBG.Draw(area, GUIContent.none, false, false, false, false);
             for (int i = 0; i < lods.Count; i++)
             {
                 var lod = lods[i];
@@ -237,18 +227,18 @@ namespace XEditor
                 foreground.width -= kSelectedLODRangePadding * 2;
                 foreground.height -= kSelectedLODRangePadding * 2;
                 foreground.center += new Vector2(kSelectedLODRangePadding, kSelectedLODRangePadding);
-                Styles.m_LODSliderRangeSelected.Draw(currentLOD.m_RangePosition, GUIContent.none, false, false, false, false);
+                Styles.LODSliderRangeSelected.Draw(currentLOD.m_RangePosition, GUIContent.none, false, false, false, false);
                 GUI.backgroundColor = kLODColors[currentLOD.LODLevel];
                 if (foreground.width > 0)
-                    Styles.m_LODSliderRange.Draw(foreground, GUIContent.none, false, false, false, false);
-                Styles.m_LODSliderText.Draw(currentLOD.m_RangePosition, startPercentageString, false, false, false, false);
+                    Styles.LODSliderRange.Draw(foreground, GUIContent.none, false, false, false, false);
+                Styles.LODSliderText.Draw(currentLOD.m_RangePosition, startPercentageString, false, false, false, false);
             }
             else
             {
                 GUI.backgroundColor = kLODColors[currentLOD.LODLevel];
                 GUI.backgroundColor *= 0.6f;
-                Styles.m_LODSliderRange.Draw(currentLOD.m_RangePosition, GUIContent.none, false, false, false, false);
-                Styles.m_LODSliderText.Draw(currentLOD.m_RangePosition, startPercentageString, false, false, false, false);
+                Styles.LODSliderRange.Draw(currentLOD.m_RangePosition, GUIContent.none, false, false, false, false);
+                Styles.LODSliderText.Draw(currentLOD.m_RangePosition, startPercentageString, false, false, false, false);
             }
             GUI.backgroundColor = tempColor;
         }
@@ -261,11 +251,11 @@ namespace XEditor
             // Draw the range of a lod level on the slider
             var tempColor = GUI.color;
             GUI.color = kCulledLODColor;
-            Styles.m_LODSliderRange.Draw(r, GUIContent.none, false, false, false, false);
+            Styles.LODSliderRange.Draw(r, GUIContent.none, false, false, false, false);
             GUI.color = tempColor;
             // Draw some details for the current marker
             var startPercentageString = string.Format("Culled\n{0:0}%", previousLODPercentage * 100);
-            Styles.m_LODSliderText.Draw(r, startPercentageString, false, false, false, false);
+            Styles.LODSliderText.Draw(r, startPercentageString, false, false, false, false);
         }
     }
 }
