@@ -36,6 +36,8 @@ __数据：__
 
 点击Detail按钮，能跳转到上面的预览界面， 进行Mesh和Render导出。
 
+[运行时效果][i4]
+
 ## 联系方式
 
 * 邮箱:  peng_huailiang@qq.com
@@ -44,3 +46,4 @@ __数据：__
 [i1]: https://80.lv/vendors/simplygon/
 [i2]: https://forum.unity.com/threads/simplygon-login.498501/#post-3352846
 [i3]: https://youtu.be/m1QRgzqeCxg
+[i4]: https://www.bilibili.com/video/BV1x54y1D7oC/
